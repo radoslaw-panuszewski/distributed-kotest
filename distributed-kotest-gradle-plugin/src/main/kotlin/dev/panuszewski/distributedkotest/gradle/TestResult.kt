@@ -1,4 +1,4 @@
-package dev.panuszewski.kotestdistributed.gradle
+package dev.panuszewski.distributedkotest.gradle
 
 import java.io.Serializable
 import kotlin.time.Duration

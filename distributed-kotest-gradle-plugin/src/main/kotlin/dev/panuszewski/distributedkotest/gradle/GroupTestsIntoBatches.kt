@@ -1,4 +1,4 @@
-package dev.panuszewski.kotestdistributed.gradle
+package dev.panuszewski.distributedkotest.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.CacheableTask

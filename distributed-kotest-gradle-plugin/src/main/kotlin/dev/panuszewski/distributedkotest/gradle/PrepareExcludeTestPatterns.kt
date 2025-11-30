@@ -1,4 +1,4 @@
-package dev.panuszewski.kotestdistributed.gradle
+package dev.panuszewski.distributedkotest.gradle
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.gradle.api.DefaultTask

@@ -1,4 +1,4 @@
-package dev.panuszewski.kotestdistributed.gradle
+package dev.panuszewski.distributedkotest.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -9,7 +9,7 @@ import org.gradle.kotlin.dsl.provideDelegate
 import org.gradle.kotlin.dsl.registering
 import org.gradle.kotlin.dsl.withType
 
-class KotestDistributedTestsPlugin : Plugin<Project> {
+class DistributedKotestPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         check(project == project.rootProject) { "KotestDistributedTestsPlugin must be applied to the root project" }

@@ -4,7 +4,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "kotest-distributed-tests"
+rootProject.name = "distributed-kotest"
 
-include("kotest-distributed-tests-gradle-plugin")
-include("kotest-distributed-tests-teamcity")
+include("distributed-kotest-gradle-plugin")
+include("distributed-kotest-teamcity")

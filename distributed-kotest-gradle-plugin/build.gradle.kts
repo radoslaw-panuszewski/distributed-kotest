@@ -7,8 +7,8 @@ plugins {
 
 gradlePlugin {
     plugins {
-        create("kotest-distributed-tests") {
-            id = "dev.panuszewski.kotest-distributed-tests"
+        create("distributed-kotest") {
+            id = "dev.panuszewski.distributed-kotest"
             implementationClass = "dev.panuszewski.kotestdistributed.gradle.KotestDistributedTestsPlugin"
         }
     }
