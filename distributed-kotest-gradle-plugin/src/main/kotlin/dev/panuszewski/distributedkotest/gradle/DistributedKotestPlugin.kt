@@ -9,10 +9,10 @@ import org.gradle.kotlin.dsl.provideDelegate
 import org.gradle.kotlin.dsl.registering
 import org.gradle.kotlin.dsl.withType
 
-class DistributedKotestPlugin : Plugin<Project> {
+public class DistributedKotestPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        check(project == project.rootProject) { "KotestDistributedTestsPlugin must be applied to the root project" }
+        check(project == project.rootProject) { "DistributedKotestPlugin must be applied to the root project" }
 
         val groupTestsIntoBatches by project.tasks.registering(GroupTestsIntoBatches::class) {
             numberOfBatches = System.getenv("NUMBER_OF_BATCHES")?.toInt() ?: 1

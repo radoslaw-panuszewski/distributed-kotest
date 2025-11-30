@@ -1,6 +1,8 @@
 package dev.panuszewski.distributedkotest.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -11,20 +13,20 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.property
 
 @CacheableTask
-abstract class GroupTestsIntoBatches : DefaultTask() {
+public abstract class GroupTestsIntoBatches : DefaultTask() {
 
     @Input
-    val numberOfBatches = project.objects.property<Int>()
+    public val numberOfBatches: Property<Int> = project.objects.property<Int>()
 
     @InputDirectory
     @PathSensitive(RELATIVE)
-    val testResultsDir = project.objects.directoryProperty()
+    public val testResultsDir: DirectoryProperty = project.objects.directoryProperty()
 
     @OutputDirectory
-    val batchesOutputDir = project.objects.directoryProperty()
+    public val batchesOutputDir: DirectoryProperty = project.objects.directoryProperty()
 
     @TaskAction
-    fun execute() {
+    public fun execute() {
         val testResults = collectTestResults()
         val batches = TestGrouper.groupIntoBatches(numberOfBatches.get(), testResults)
         writeBatchesToOutputDir(batches)

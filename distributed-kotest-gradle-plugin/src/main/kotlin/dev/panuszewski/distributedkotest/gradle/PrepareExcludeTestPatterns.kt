@@ -2,6 +2,9 @@ package dev.panuszewski.distributedkotest.gradle
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -12,20 +15,20 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.property
 
 @CacheableTask
-abstract class PrepareExcludeTestPatterns : DefaultTask() {
+public abstract class PrepareExcludeTestPatterns : DefaultTask() {
 
     @Input
-    val batchNumber = project.objects.property<Int>()
+    public val batchNumber: Property<Int> = project.objects.property<Int>()
 
     @InputDirectory
     @PathSensitive(NAME_ONLY)
-    val batchesDir = project.objects.directoryProperty()
+    public val batchesDir: DirectoryProperty = project.objects.directoryProperty()
 
     @OutputFile
-    val excludePatternsFile = project.objects.fileProperty()
+    public val excludePatternsFile: RegularFileProperty = project.objects.fileProperty()
 
     @TaskAction
-    fun execute() {
+    public fun execute() {
         val batches = parseTestBatches()
         val testsToExclude = findTestsToExclude(batches)
         writeExcludesFile(testsToExclude)

@@ -14,6 +14,10 @@ gradlePlugin {
     }
 }
 
+kotlin {
+    explicitApi()
+}
+
 dependencies {
     implementation(libs.jackson.moduleKotlin)
     implementation(libs.jackson.dataformatJsr310)
