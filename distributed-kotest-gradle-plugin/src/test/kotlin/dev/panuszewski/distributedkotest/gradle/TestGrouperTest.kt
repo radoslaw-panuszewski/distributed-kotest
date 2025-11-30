@@ -1,12 +1,15 @@
 package dev.panuszewski.distributedkotest.gradle
 
 import io.kotest.assertions.throwables.shouldNotThrow
+import io.kotest.assertions.withClue
+import io.kotest.inspectors.shouldForAll
 import io.kotest.inspectors.shouldForOne
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotContainAll
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -97,6 +100,21 @@ class TestGrouperTest {
         batches shouldHaveSize 3
         batches.shouldForOne { it.tests.shouldContainAll(firstTest, secondTest) }
         batches.shouldForOne { it.tests.shouldContainAll(thirdTest, fourthTest) }
+    }
+
+    @Test
+    fun `should produce deterministic results regardless of input order`() {
+        // given
+        val numberOfBatches = 3
+        val testResults = (1..20).map { testResult("test$it", "com.pkg$it.TestClass$it") }
+
+        // when
+        val results = (1..20).map { TestGrouper.groupIntoBatches(numberOfBatches, testResults.shuffled()) }
+
+        // then
+        withClue("All subsequent results should be identical") {
+            results.distinct() shouldHaveSize 1
+        }
     }
 
     @Test
