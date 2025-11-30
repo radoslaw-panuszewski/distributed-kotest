@@ -29,6 +29,7 @@ public class DistributedKotestPlugin : Plugin<Project> {
         project.allprojects {
             tasks.withType<Test>().configureEach {
                 inputs.files(prepareExcludeTestPatterns.flatMap { it.excludePatternsFile })
+                // TODO do it only if debugMode is enabled
                 outputs.cacheIf { false }
                 outputs.upToDateWhen { false }
 

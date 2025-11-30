@@ -1,5 +1,6 @@
 package dev.panuszewski.distributedkotest.teamcity
 
+import dev.panuszewski.distributedkotest.teamcity.steps.copyInitScript
 import dev.panuszewski.distributedkotest.teamcity.steps.packGradleCaches
 import dev.panuszewski.distributedkotest.teamcity.steps.unpackGradleCaches
 import dev.panuszewski.distributedkotest.teamcity.steps.unpackTestResults
@@ -12,6 +13,7 @@ import jetbrains.buildServer.configs.kotlin.matrix
 public class DistributedTests(
     testTask: String,
     numberOfBatches: Int,
+    debugMode: Boolean = false,
     cacheGradleHome: Boolean = true,
     customizer: BuildType.() -> Unit = {}
 ) : BuildType() {
@@ -56,8 +58,11 @@ public class DistributedTests(
             ifParamDoesNotExist("env.SKIP_BUILD") {
                 unpackGradleCaches()
 
+                copyInitScript("distributed-kotest.init.gradle.kts")
+
                 gradle {
                     tasks = testTask
+                    gradleParams = "--init-script distributed-kotest.init.gradle.kts"
                 }
 
                 script {
