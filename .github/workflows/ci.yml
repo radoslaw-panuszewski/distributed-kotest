@@ -30,3 +30,6 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - run: ./gradlew publish
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
