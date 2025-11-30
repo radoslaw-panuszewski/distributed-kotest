@@ -9,7 +9,7 @@ gradlePlugin {
     plugins {
         create("distributed-kotest") {
             id = "dev.panuszewski.distributed-kotest"
-            implementationClass = "dev.panuszewski.kotestdistributed.gradle.KotestDistributedTestsPlugin"
+            implementationClass = "dev.panuszewski.distributedkotest.gradle.DistributedKotestPlugin"
         }
     }
 }

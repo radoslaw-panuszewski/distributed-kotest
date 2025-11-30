@@ -29,7 +29,7 @@ public class DistributedTests(
 
         dependencies {
             artifacts(this@DistributedTests) {
-                buildRule = lastFinished()
+                buildRule = lastSuccessful()
 
                 artifactRules = buildString {
                     appendLine("?:test-results*.zip => test-results")
