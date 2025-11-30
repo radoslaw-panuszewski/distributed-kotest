@@ -3,7 +3,7 @@ package dev.panuszewski.distributedkotest.teamcity
 import dev.panuszewski.distributedkotest.teamcity.steps.packGradleCaches
 import dev.panuszewski.distributedkotest.teamcity.steps.unpackGradleCaches
 import dev.panuszewski.distributedkotest.teamcity.steps.unpackTestResults
-import dev.panuszewski.distributedkotest.teamcity.util.ifDoesNotExist
+import dev.panuszewski.distributedkotest.teamcity.util.ifParamDoesNotExist
 import jetbrains.buildServer.configs.kotlin.BuildType
 import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
@@ -53,7 +53,7 @@ public class DistributedTests(
         steps {
             unpackTestResults()
 
-            ifDoesNotExist("env.SKIP_BUILD") {
+            ifParamDoesNotExist("env.SKIP_BUILD") {
                 unpackGradleCaches()
 
                 gradle {

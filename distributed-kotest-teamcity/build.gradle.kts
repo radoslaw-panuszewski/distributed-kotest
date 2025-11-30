@@ -15,7 +15,8 @@ java {
 
 dependencies {
     compileOnly("org.jetbrains.teamcity:configs-dsl-kotlin-latest:2025.07")
-    compileOnly("org.jetbrains.teamcity:configs-dsl-kotlin-plugins-latest:1.0-SNAPSHOT")
+    compileOnly(files("lib/configs-dsl-kotlin-commandLineRunner.jar"))
+    compileOnly(files("lib/configs-dsl-kotlin-Gradle.jar"))
 }
 
 publishing {
