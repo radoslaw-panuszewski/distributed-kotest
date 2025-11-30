@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
 plugins {
     `java-library`
     `maven-publish`
-    `kotlin-dsl`
+    alias(libs.plugins.kotlin.jvm)
 }
 
 kotlin {
