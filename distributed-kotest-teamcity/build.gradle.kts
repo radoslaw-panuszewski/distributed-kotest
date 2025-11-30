@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
+
 plugins {
     `java-library`
     `maven-publish`
@@ -5,7 +7,12 @@ plugins {
 }
 
 kotlin {
+    jvmToolchain(21)
     explicitApi()
+    compilerOptions {
+        languageVersion = KOTLIN_2_0
+        apiVersion = KOTLIN_2_0
+    }
 }
 
 java {
