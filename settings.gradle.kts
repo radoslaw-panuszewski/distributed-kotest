@@ -1,5 +1,7 @@
 dependencyResolutionManagement {
     repositories {
+        maven("https://download.jetbrains.com/teamcity-repository")
+        maven("https://interview.teamcity.com/app/dsl-plugins-repository")
         mavenCentral()
     }
 }

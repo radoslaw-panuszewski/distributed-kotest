@@ -1,5 +1,5 @@
-import dev.panuszewski.distributedkotest.gradle.TestGrouper
-import dev.panuszewski.distributedkotest.gradle.TestResult
+package dev.panuszewski.distributedkotest.gradle
+
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.inspectors.shouldForOne
 import io.kotest.matchers.collections.shouldBeEmpty
