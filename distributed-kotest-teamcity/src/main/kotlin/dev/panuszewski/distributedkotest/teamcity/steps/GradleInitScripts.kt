@@ -4,14 +4,14 @@ import jetbrains.buildServer.configs.kotlin.BuildSteps
 import jetbrains.buildServer.configs.kotlin.buildSteps.ScriptBuildStep
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
-internal fun BuildSteps.copyInitScript(initScript: String, customizer: ScriptBuildStep.() -> Unit = {}) {
+internal fun BuildSteps.copyInitScript(initScriptName: String, customizer: ScriptBuildStep.() -> Unit = {}) {
     script {
-        val initScriptContent = javaClass.getResource("/$initScript").readText()
+        val initScriptContent = javaClass.getResource("/$initScriptName").readText()
         scriptContent = """
-            cat << 'EOF' > distributed-kotest.init.gradle.kts
-            $initScriptContent
-            EOF
-            """
+            |cat > $initScriptName <<EOF
+            |$initScriptContent
+            |EOF
+            """.trimMargin()
 
         customizer()
     }
