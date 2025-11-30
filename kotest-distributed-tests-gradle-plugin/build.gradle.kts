@@ -5,6 +5,15 @@ plugins {
     `maven-publish`
 }
 
+gradlePlugin {
+    plugins {
+        create("kotest-distributed-tests") {
+            id = "dev.panuszewski.kotest-distributed-tests"
+            implementationClass = "dev.panuszewski.kotestdistributed.gradle.KotestDistributedTestsPlugin"
+        }
+    }
+}
+
 dependencies {
     implementation(libs.jackson.moduleKotlin)
     implementation(libs.jackson.dataformatJsr310)

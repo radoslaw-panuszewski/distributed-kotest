@@ -1,3 +1,5 @@
+package dev.panuszewski.kotestdistributed.gradle
+
 import org.apache.commons.numbers.combinatorics.Combinations
 import kotlin.time.Duration
 

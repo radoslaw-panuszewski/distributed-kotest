@@ -1,3 +1,5 @@
+package dev.panuszewski.kotestdistributed.gradle
+
 import kotlin.time.Duration
 
 internal data class TestBatch(
