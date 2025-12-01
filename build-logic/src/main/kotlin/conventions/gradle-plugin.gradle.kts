@@ -3,10 +3,21 @@
 package conventions
 
 import libs
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `java-gradle-plugin`
     `maven-publish`
+}
+
+tasks {
+    withType<KotlinCompile>().configureEach {
+        compilerOptions {
+            languageVersion = KOTLIN_2_0
+            apiVersion = KOTLIN_2_0
+        }
+    }
 }
 
 testing.suites {
