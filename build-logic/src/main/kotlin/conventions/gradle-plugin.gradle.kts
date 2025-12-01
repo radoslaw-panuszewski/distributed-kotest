@@ -17,6 +17,12 @@ testing.suites {
             implementation(libs.jupiter.api)
             implementation(libs.kotest.assertions)
         }
+
+        targets.all {
+            tasks.check {
+                dependsOn(testTask)
+            }
+        }
     }
 
     register<JvmTestSuite>("functionalTest") {

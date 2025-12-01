@@ -1,6 +1,5 @@
 rootProject {
     if (gradle.parent != null) {
-        logger.info("Included build '${project.name}' is ignored by distributed-kotest")
         return@rootProject
     }
 
