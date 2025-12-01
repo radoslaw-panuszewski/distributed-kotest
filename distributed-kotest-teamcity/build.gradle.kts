@@ -1,27 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
-
 plugins {
-    `java-library`
-    `maven-publish`
-    alias(libs.plugins.kotlin.jvm)
-}
-
-kotlin {
-    jvmToolchain(21)
-    explicitApi()
-    compilerOptions {
-        languageVersion = KOTLIN_2_0
-        apiVersion = KOTLIN_2_0
-    }
-}
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
-
-sourceSets {
-    register("initScripts")
+    id("conventions.library")
 }
 
 dependencies {
@@ -29,19 +7,5 @@ dependencies {
     compileOnly(files("lib/configs-dsl-kotlin-commandLineRunner.jar"))
     compileOnly(files("lib/configs-dsl-kotlin-Gradle.jar"))
 
-    "initScriptsCompileOnly"(gradleKotlinDsl())
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("library") {
-            from(components["java"])
-        }
-    }
-}
-
-tasks {
-    processResources {
-        from(sourceSets["initScripts"].allSource)
-    }
+    classpathItems(project(":distributed-kotest-gradle-init-script", "initScripts"))
 }

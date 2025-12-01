@@ -1,4 +1,9 @@
 rootProject {
+    if (gradle.parent != null) {
+        logger.info("Included build '${project.name}' is ignored by distributed-kotest")
+        return@rootProject
+    }
+
     buildscript {
         repositories {
             maven("https://central.sonatype.com/repository/maven-snapshots")

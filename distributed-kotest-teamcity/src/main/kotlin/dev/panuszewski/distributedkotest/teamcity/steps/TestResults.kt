@@ -25,5 +25,7 @@ internal fun BuildSteps.unpackTestResults(customizer: ScriptBuildStep.() -> Unit
             
             unzip -o '*.zip' || true
         """
+
+        customizer()
     }
 }

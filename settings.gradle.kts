@@ -13,5 +13,6 @@ rootProject.name = "distributed-kotest"
 
 includeBuild("build-logic")
 
+include("distributed-kotest-gradle-init-script")
 include("distributed-kotest-gradle-plugin")
 include("distributed-kotest-teamcity")
