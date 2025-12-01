@@ -1,5 +1,6 @@
-package dev.panuszewski.distributedkotest.gradle
+package dev.panuszewski.distributedkotest.gradle.batches
 
+import dev.panuszewski.distributedkotest.gradle.TestResult
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList

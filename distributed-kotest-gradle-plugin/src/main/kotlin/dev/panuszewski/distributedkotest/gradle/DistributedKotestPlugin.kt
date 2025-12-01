@@ -1,5 +1,7 @@
 package dev.panuszewski.distributedkotest.gradle
 
+import dev.panuszewski.distributedkotest.gradle.batches.GroupTestsIntoBatches
+import dev.panuszewski.distributedkotest.gradle.excludepatterns.PrepareExcludeTestPatterns
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test

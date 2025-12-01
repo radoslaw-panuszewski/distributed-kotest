@@ -1,6 +1,9 @@
-package dev.panuszewski.distributedkotest.gradle
+package dev.panuszewski.distributedkotest.gradle.excludepatterns
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import dev.panuszewski.distributedkotest.gradle.TestBatch
+import dev.panuszewski.distributedkotest.gradle.TestResult
+import dev.panuszewski.distributedkotest.gradle.util.objectMapper
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty

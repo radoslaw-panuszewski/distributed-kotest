@@ -1,5 +1,7 @@
-package dev.panuszewski.distributedkotest.gradle
+package dev.panuszewski.distributedkotest.gradle.batches
 
+import dev.panuszewski.distributedkotest.gradle.TestBatch
+import dev.panuszewski.distributedkotest.gradle.TestResult
 import dev.panuszewski.distributedkotest.gradle.util.combinations
 import kotlin.time.Duration
 
@@ -104,8 +106,5 @@ private class MutableTestBatch(val number: Int) {
 private fun List<TestResult>.totalDuration() =
     map(TestResult::duration).fold(Duration.ZERO, Duration::plus)
 
-private fun String.packageName() =
-    substringBeforeLast(".")
-
-private fun String.className() =
-    substringAfterLast(".")
+private fun String.packageName() = substringBeforeLast(".")
+private fun String.className() = substringAfterLast(".")
