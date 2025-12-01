@@ -13,7 +13,6 @@ axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axi
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
 
 [libraries]
-#teamcity-
 jackson-moduleKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-dataformatJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 commons-numbersCombinatorics = { module = "org.apache.commons:commons-numbers-combinatorics", version.ref = "commons-numbers" }

@@ -56,14 +56,16 @@ public abstract class GroupTestsIntoBatches : DefaultTask() {
     }
 
     private fun logSummaryMessage(allTestResults: List<TestResult>, batches: List<TestBatch>) {
-        val message = buildString {
-            appendLine("Found ${allTestResults.size} tests")
-            appendLine("Grouped them into batches:")
-            batches.forEach {
-                appendLine("${it.number}. tests = ${it.tests.size}, total duration = ${it.totalDuration}")
+        if (allTestResults.isNotEmpty()) {
+            val message = buildString {
+                appendLine("Found ${allTestResults.size} tests")
+                appendLine("Grouped them into batches:")
+                batches.forEach {
+                    appendLine("${it.number}. tests = ${it.tests.size}, total duration = ${it.totalDuration}")
+                }
             }
+            logger.lifecycle(message)
         }
-        logger.lifecycle(message)
     }
 }
 

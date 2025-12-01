@@ -32,7 +32,7 @@ public abstract class PrepareExcludeTestPatterns : DefaultTask() {
         val batches = parseTestBatches()
         val testsToExclude = findTestsToExclude(batches)
         writeExcludesFile(testsToExclude)
-        logSummaryMessage(batches)
+        logSummaryMessage(batches, testsToExclude)
     }
 
     private fun parseTestBatches(): List<TestBatch> =
@@ -54,10 +54,14 @@ public abstract class PrepareExcludeTestPatterns : DefaultTask() {
         excludePatternsFile.get().asFile.writeText(content)
     }
 
-    private fun logSummaryMessage(batches: List<TestBatch>) {
-        val currentBatch = batches.find { it.number == batchNumber.get() }
-        val testCount = currentBatch?.tests?.size ?: 0
-        logger.lifecycle("Running $testCount tests from batch ${batchNumber.get()} + any tests recently added")
+    private fun logSummaryMessage(batches: List<TestBatch>, testsToExclude: List<TestResult>) {
+        if (testsToExclude.isNotEmpty()) {
+            val currentBatch = batches.find { it.number == batchNumber.get() }
+            val testCount = currentBatch?.tests?.size ?: 0
+            logger.lifecycle("Running $testCount tests from batch ${batchNumber.get()} + any tests recently added")
+        } else {
+            logger.lifecycle("Running all tests")
+        }
     }
 }
 

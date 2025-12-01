@@ -14,9 +14,12 @@ public class DistributedKotestPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         check(project == project.rootProject) { "DistributedKotestPlugin must be applied to the root project" }
 
+        project.projectDir.resolve("test-results").mkdirs()
+
+        // TODO print the summary even if the tasks are FROM-CACHE
         val groupTestsIntoBatches by project.tasks.registering(GroupTestsIntoBatches::class) {
             numberOfBatches = System.getenv("NUMBER_OF_BATCHES")?.toInt() ?: 1
-            testResultsDir = project.projectDir.resolve("test-results") // TODO build/test-results
+            testResultsDir = project.layout.projectDirectory.dir("test-results") // TODO build/test-results
             batchesOutputDir = project.layout.buildDirectory.dir("test-batches")
         }
 
