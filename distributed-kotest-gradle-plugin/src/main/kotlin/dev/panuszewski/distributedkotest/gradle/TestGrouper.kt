@@ -1,6 +1,6 @@
 package dev.panuszewski.distributedkotest.gradle
 
-import org.apache.commons.numbers.combinatorics.Combinations
+import dev.panuszewski.distributedkotest.gradle.util.combinations
 import kotlin.time.Duration
 
 internal object TestGrouper {
@@ -19,53 +19,62 @@ internal object TestGrouper {
     }
 
     private fun findAtomicGroups(testResults: List<TestResult>): List<AtomicTestGroup> {
-        val testClasses = testResults
+        val testClasses = groupTestsIntoClasses(testResults)
+
+        val prefixes = findCommonPrefixes(testClasses)
+        val normalizedPrefixes = normalizePrefixes(prefixes)
+
+        val testClassesWithCommonPrefix = mergeClassesWithCommonPrefix(testClasses, normalizedPrefixes)
+        val testClassesWithoutCommonPrefix = findClassesWithNoCommonPrefix(testClasses, normalizedPrefixes)
+
+        return testClassesWithCommonPrefix + testClassesWithoutCommonPrefix
+    }
+
+    private fun groupTestsIntoClasses(testResults: List<TestResult>): List<AtomicTestGroup> =
+        testResults
             .groupBy(TestResult::classname)
             .toSortedMap()
             .mapValues { (classname, tests) -> AtomicTestGroup(classname, tests) }
             .values
             .toList()
 
-        val commonPrefixes = testClasses
-            .groupBy { it.commonPrefix.substringBeforeLast(".") }
+    private fun findCommonPrefixes(testClasses: List<AtomicTestGroup>): List<String> =
+        testClasses
+            .map { it.commonPrefix }
+            .groupBy { it.packageName() }
             .toSortedMap()
             .filterValues { it.size >= 2 }
-            .mapNotNull { (packageName, classes) ->
-                Combinations.of(classes.size, 2)
-                    .map { Pair(classes[it[0]], classes[it[1]]) }
-                    .map { (a, b) -> a.commonPrefix.substringAfterLast(".").commonPrefixWith(b.commonPrefix.substringAfterLast(".")) }
+            .flatMap { (packageName, classes) ->
+                classes
+                    .map { it.className() }
+                    .combinations(k = 2)
+                    .map { (className, anotherClassName) -> className.commonPrefixWith(anotherClassName) }
                     .filter(String::isNotBlank)
-                    .map { prefix -> "$packageName.$prefix" }
+                    .map { classNamePrefix -> "$packageName.$classNamePrefix" }
             }
-            .flatten()
             .distinct()
-            .toMutableList()
 
-        if (commonPrefixes.size >= 2) {
-            Combinations.of(commonPrefixes.size, 2)
-                .map { Pair(commonPrefixes[it[0]], commonPrefixes[it[1]]) }
-                .filter { (a, b) -> a.substringBeforeLast(".") == b.substringBeforeLast(".") }
-                .forEach { (a, b) ->
-                    if (a.substringAfterLast(".").startsWith(b.substringAfterLast("."))) {
-                        commonPrefixes.remove(a)
-                    } else if (b.substringAfterLast(".").startsWith(a.substringAfterLast("."))) {
-                        commonPrefixes.remove(b)
-                    }
-                }
-        }
+    private fun normalizePrefixes(prefixes: List<String>): List<String> =
+        prefixes
+            .filter { prefix ->
+                prefixes
+                    .filter { it != prefix }
+                    .none { anotherPrefix -> prefix.startsWith(anotherPrefix) }
+            }
 
-        val testClassesWithCommonPrefix = commonPrefixes
+    private fun mergeClassesWithCommonPrefix(testClasses: List<AtomicTestGroup>, prefixes: List<String>): List<AtomicTestGroup> =
+        prefixes
             .map { prefix ->
                 testClasses
                     .filter { testClass -> testClass.commonPrefix.startsWith(prefix) }
-                    .reduce { a, b -> a.merge(prefix, b) }
+                    .reduce { testClass, anotherTestClass -> testClass.merge(prefix, anotherTestClass) }
             }
 
-        val testClassesWithoutCommonPrefix = testClasses
-            .filter { testClass -> commonPrefixes.none { prefix -> testClass.commonPrefix.startsWith(prefix) } }
-
-        return testClassesWithCommonPrefix + testClassesWithoutCommonPrefix
-    }
+    private fun findClassesWithNoCommonPrefix(testClasses: List<AtomicTestGroup>, prefixes: List<String>): List<AtomicTestGroup> =
+        testClasses
+            .filter { testClass ->
+                prefixes.none { prefix -> testClass.commonPrefix.startsWith(prefix) }
+            }
 }
 
 private data class AtomicTestGroup(
@@ -94,3 +103,9 @@ private class MutableTestBatch(val number: Int) {
 
 private fun List<TestResult>.totalDuration() =
     map(TestResult::duration).fold(Duration.ZERO, Duration::plus)
+
+private fun String.packageName() =
+    substringBeforeLast(".")
+
+private fun String.className() =
+    substringAfterLast(".")
