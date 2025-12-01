@@ -1,6 +1,6 @@
 plugins {
-    id("conventions.gradle-plugin")
     `kotlin-dsl`
+    id("conventions.gradle-plugin")
 }
 
 kotlin {

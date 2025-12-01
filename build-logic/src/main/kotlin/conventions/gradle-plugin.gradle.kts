@@ -11,11 +11,13 @@ plugins {
     `maven-publish`
 }
 
-tasks {
-    withType<KotlinCompile>().configureEach {
-        compilerOptions {
-            languageVersion = KOTLIN_2_0
-            apiVersion = KOTLIN_2_0
+afterEvaluate {
+    tasks {
+        withType<KotlinCompile>().configureEach {
+            compilerOptions {
+                languageVersion = KOTLIN_2_0
+                apiVersion = KOTLIN_2_0
+            }
         }
     }
 }
