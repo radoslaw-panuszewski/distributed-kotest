@@ -11,6 +11,10 @@ plugins {
     `maven-publish`
 }
 
+java {
+    withSourcesJar()
+}
+
 afterEvaluate {
     tasks {
         withType<KotlinCompile>().configureEach {
