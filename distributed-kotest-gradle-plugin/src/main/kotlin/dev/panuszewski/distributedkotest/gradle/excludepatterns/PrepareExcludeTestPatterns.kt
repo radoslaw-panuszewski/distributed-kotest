@@ -16,8 +16,9 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity.NAME_ONLY
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.property
+import org.gradle.work.DisableCachingByDefault
 
-@CacheableTask
+@DisableCachingByDefault
 public abstract class PrepareExcludeTestPatterns : DefaultTask() {
 
     @Input
@@ -58,10 +59,29 @@ public abstract class PrepareExcludeTestPatterns : DefaultTask() {
     }
 
     private fun logSummaryMessage(batches: List<TestBatch>, testsToExclude: List<TestResult>) {
-        if (testsToExclude.isNotEmpty()) {
-            val currentBatch = batches.find { it.number == batchNumber.get() }
-            val testCount = currentBatch?.tests?.size ?: 0
-            logger.lifecycle("Running $testCount tests from batch ${batchNumber.get()} + any tests recently added")
+        val allTestResults = batches.flatMap(TestBatch::tests)
+        val currentBatch = batches.find { it.number == batchNumber.get() }
+
+        if (allTestResults.isNotEmpty()) {
+            val message = buildString {
+                appendLine("Found ${allTestResults.size} tests")
+                appendLine("Grouped them into batches:")
+                batches.forEach {
+                    appendLine("${it.number}. tests = ${it.tests.size}, total duration = ${it.totalDuration}")
+                }
+            }
+            logger.lifecycle(message)
+        }
+
+        if (testsToExclude.isNotEmpty() && currentBatch != null) {
+            val newTestsCount = currentBatch.tests.count { it.name == "<new test>" }
+            val oldTestsCount = currentBatch.tests.size - newTestsCount
+            logger.lifecycle(buildString {
+                append("Running $oldTestsCount tests from batch ${batchNumber.get()}")
+                if (newTestsCount > 0) {
+                    append(" + up to $newTestsCount new tests (some of them may be ignored at runtime)")
+                }
+            })
         } else {
             logger.lifecycle("Running all tests")
         }

@@ -82,7 +82,7 @@ public abstract class GroupTestsIntoBatches : DefaultTask() {
             .filter { discoveredTestClass -> testResults.none { it.classname == discoveredTestClass } }
             .map {
                 TestResult(
-                    name = "multiple tests",
+                    name = "<new test>",
                     classname = it,
                     result = "successful",
                     duration = Duration.ZERO
@@ -91,7 +91,6 @@ public abstract class GroupTestsIntoBatches : DefaultTask() {
 
         val batches = TestGrouper.groupIntoBatches(numberOfBatches.get(), testResults, newTests)
         writeBatchesToOutputDir(batches)
-        logSummaryMessage(testResults, batches)
     }
 
     private fun collectTestResults(): List<TestResult> =
@@ -113,19 +112,6 @@ public abstract class GroupTestsIntoBatches : DefaultTask() {
             val batchFile = outputDir.resolve("batch-${batch.number}.json")
             batchFile.createNewFile()
             batchFile.writeText(objectMapper.writeValueAsString(batch))
-        }
-    }
-
-    private fun logSummaryMessage(allTestResults: List<TestResult>, batches: List<TestBatch>) {
-        if (allTestResults.isNotEmpty()) {
-            val message = buildString {
-                appendLine("Found ${allTestResults.size} tests")
-                appendLine("Grouped them into batches:")
-                batches.forEach {
-                    appendLine("${it.number}. tests = ${it.tests.size}, total duration = ${it.totalDuration}")
-                }
-            }
-            logger.lifecycle(message)
         }
     }
 }
