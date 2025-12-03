@@ -31,6 +31,8 @@ import java.util.Optional
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.primaryConstructor
 import kotlin.sequences.flatMap
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @CacheableTask
 public abstract class GroupTestsIntoBatches : DefaultTask() {
@@ -68,16 +70,26 @@ public abstract class GroupTestsIntoBatches : DefaultTask() {
                     }
             }
 
-
         val urls = (testSourceSetOutput + testRuntimeClasspath).map { it.toURI().toURL() }.toTypedArray() + javaClass.protectionDomain.codeSource.location
         val customClassLoader = URLClassLoader(urls)
         val discoveryInvokerClass = customClassLoader.loadClass("dev.panuszewski.distributedkotest.gradle.batches.DiscoveryInvoker").kotlin
         val discoveryInvokerInstance = discoveryInvokerClass.primaryConstructor?.call()
         val discoverMethod = discoveryInvokerClass.declaredFunctions.find { it.name == "discover" }
-        val discoveryResult = discoverMethod?.call(discoveryInvokerInstance, classes)
+        val discoveredTestClasses = discoverMethod?.call(discoveryInvokerInstance, classes) as List<String>
 
         val testResults = collectTestResults()
-        val batches = TestGrouper.groupIntoBatches(numberOfBatches.get(), testResults)
+        val newTests = discoveredTestClasses
+            .filter { discoveredTestClass -> testResults.none { it.classname == discoveredTestClass } }
+            .map {
+                TestResult(
+                    name = "multiple tests",
+                    classname = it,
+                    result = "successful",
+                    duration = Duration.ZERO
+                )
+            }
+
+        val batches = TestGrouper.groupIntoBatches(numberOfBatches.get(), testResults, newTests)
         writeBatchesToOutputDir(batches)
         logSummaryMessage(testResults, batches)
     }
@@ -121,7 +133,7 @@ public abstract class GroupTestsIntoBatches : DefaultTask() {
 
 public class DiscoveryInvoker {
 
-    public fun discover(classes: List<String>): DiscoveryResult {
+    public fun discover(classes: List<String>): List<String> {
         val selectors = classes.map { DiscoverySelectors.selectClass(it) }
 
         val parameters = object : ConfigurationParameters {
@@ -141,6 +153,7 @@ public class DiscoveryInvoker {
             override fun getConfigurationParameters(): ConfigurationParameters = parameters
         }
 
-        return Discovery.discover(UniqueId.forEngine("kotest"), request)
+        val discoveryResult = Discovery.discover(UniqueId.forEngine("kotest"), request)
+        return discoveryResult.specs.mapNotNull { it.qualifiedName }
     }
 }
