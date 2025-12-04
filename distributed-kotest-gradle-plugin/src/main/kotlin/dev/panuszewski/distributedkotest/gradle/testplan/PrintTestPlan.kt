@@ -48,6 +48,7 @@ public abstract class PrintTestPlan : DefaultTask() {
             .asFile
             .listFiles()
             .map { objectMapper.readValue<TestBatch>(it) }
+            .sortedBy(TestBatch::number)
 
     private fun printGroupingSummary(collectedTestResults: List<TestResult>, batches: List<TestBatch>) {
         if (collectedTestResults.isNotEmpty()) {
