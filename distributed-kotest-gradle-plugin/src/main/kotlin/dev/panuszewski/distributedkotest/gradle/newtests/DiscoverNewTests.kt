@@ -6,6 +6,7 @@ import dev.panuszewski.distributedkotest.gradle.util.objectMapper
 import dev.panuszewski.distributedkotest.gradle.util.objectWriter
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
@@ -15,9 +16,11 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity.NAME_ONLY
 import org.gradle.api.tasks.TaskAction
+import java.io.File
+import java.net.URI
+import java.net.URL
 import java.net.URLClassLoader
 import kotlin.reflect.full.declaredFunctions
-import kotlin.reflect.full.primaryConstructor
 import kotlin.time.Duration
 
 @CacheableTask
@@ -64,15 +67,27 @@ public abstract class DiscoverNewTests : DefaultTask() {
                 }
         }
 
+    /**
+     * We need a custom classloader that will have access to classes from testSourceSetOutput,
+     * because [io.kotest.runner.junit.platform.discovery.Discovery] will try to load those classes.
+     *
+     * The [io.kotest.runner.junit.platform.discovery.Discovery] util is called via [DiscoveryInvoker],
+     * that will be loaded via the custom class loader.
+     */
     private fun discoverTestClasses(classes: List<String>): List<String> {
-        val urls = (testSourceSetOutput + testRuntimeClasspath).map { it.toURI().toURL() }.toTypedArray() + javaClass.protectionDomain.codeSource.location
-        val customClassLoader = URLClassLoader(urls)
-        val discoveryInvokerClass = customClassLoader.loadClass(DiscoveryInvoker::class.qualifiedName).kotlin
-        val discoveryInvokerConstructor = discoveryInvokerClass.constructors.first()
-        val discoveryInvokerInstance = discoveryInvokerConstructor.call()
+        val classLoader = createClassLoader()
+        val discoveryInvokerClass = classLoader.loadClass(DiscoveryInvoker::class.qualifiedName).kotlin
+        val discoveryInvokerInstance = discoveryInvokerClass.constructors.first().call()
         val discoverMethod = discoveryInvokerClass.declaredFunctions.find { it.name == "discover" }
-        val discoveredTestClasses = discoverMethod?.call(discoveryInvokerInstance, classes) as List<String>
-        return discoveredTestClasses
+        return discoverMethod?.call(discoveryInvokerInstance, classes) as List<String>
+    }
+
+    private fun createClassLoader(): URLClassLoader {
+        val testClasses = testSourceSetOutput.toArrayOfUrls()
+        val testDependencies = testRuntimeClasspath.toArrayOfUrls()
+        val discoveryInvokerClass = DiscoveryInvoker::class.java.protectionDomain.codeSource.location
+
+        return URLClassLoader(testClasses + testDependencies + discoveryInvokerClass)
     }
 
     private fun filterNewTests(discoveredTestClasses: List<String>, testResults: List<TestResult>): List<TestResult> =
@@ -87,3 +102,6 @@ public abstract class DiscoverNewTests : DefaultTask() {
                 )
             }
 }
+
+private fun FileCollection.toArrayOfUrls(): Array<URL> =
+    map(File::toURI).map(URI::toURL).toTypedArray()
