@@ -3,7 +3,7 @@ package dev.panuszewski.distributedkotest.gradle.newtests
 import com.fasterxml.jackson.module.kotlin.readValue
 import dev.panuszewski.distributedkotest.gradle.TestResult
 import dev.panuszewski.distributedkotest.gradle.util.objectMapper
-import io.kotest.runner.junit.platform.discovery.Discovery
+import dev.panuszewski.distributedkotest.gradle.util.objectWriter
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
@@ -15,16 +15,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity.NAME_ONLY
 import org.gradle.api.tasks.TaskAction
-import org.junit.platform.engine.ConfigurationParameters
-import org.junit.platform.engine.DiscoveryFilter
-import org.junit.platform.engine.DiscoverySelector
-import org.junit.platform.engine.EngineDiscoveryRequest
-import org.junit.platform.engine.UniqueId
-import org.junit.platform.engine.discovery.ClassSelector
-import org.junit.platform.engine.discovery.DiscoverySelectors
 import java.net.URLClassLoader
-import java.util.Optional
-import kotlin.collections.plus
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.primaryConstructor
 import kotlin.time.Duration
@@ -53,7 +44,7 @@ public abstract class DiscoverNewTests : DefaultTask() {
         val classes = fullyQualifiedNamesFromClassFiles()
         val discoveredTestClasses = discoverTestClasses(classes)
         val newTests = filterNewTests(discoveredTestClasses, collectedTestResults)
-        val newTestsJson = objectMapper.writeValueAsString(newTests)
+        val newTestsJson = objectWriter.writeValueAsString(newTests)
         discoveredNewTestsFile.get().asFile.writeText(newTestsJson)
     }
 
@@ -77,7 +68,8 @@ public abstract class DiscoverNewTests : DefaultTask() {
         val urls = (testSourceSetOutput + testRuntimeClasspath).map { it.toURI().toURL() }.toTypedArray() + javaClass.protectionDomain.codeSource.location
         val customClassLoader = URLClassLoader(urls)
         val discoveryInvokerClass = customClassLoader.loadClass(DiscoveryInvoker::class.qualifiedName).kotlin
-        val discoveryInvokerInstance = discoveryInvokerClass.primaryConstructor?.call()
+        val discoveryInvokerConstructor = discoveryInvokerClass.constructors.first()
+        val discoveryInvokerInstance = discoveryInvokerConstructor.call()
         val discoverMethod = discoveryInvokerClass.declaredFunctions.find { it.name == "discover" }
         val discoveredTestClasses = discoverMethod?.call(discoveryInvokerInstance, classes) as List<String>
         return discoveredTestClasses
@@ -94,35 +86,4 @@ public abstract class DiscoverNewTests : DefaultTask() {
                     duration = Duration.ZERO
                 )
             }
-}
-
-internal class DiscoveryInvoker {
-    fun discover(classes: List<String>): List<String> {
-        val selectors = classes.map { DiscoverySelectors.selectClass(it) }
-        val discoveryRequest = ClassSelectingDiscoveryRequest(selectors)
-        val discoveryResult = Discovery.discover(UniqueId.forEngine("kotest"), discoveryRequest)
-        return discoveryResult.specs.mapNotNull { it.qualifiedName }
-    }
-}
-
-internal class ClassSelectingDiscoveryRequest(
-    private val selectors: List<ClassSelector>,
-) : EngineDiscoveryRequest {
-
-    override fun <T : DiscoverySelector> getSelectorsByType(selectorType: Class<T>): List<T> =
-        when (selectorType) {
-            ClassSelector::class.java -> selectors as List<T>
-            else -> emptyList()
-        }
-
-    override fun <T : DiscoveryFilter<*>?> getFiltersByType(filterType: Class<T>): List<T> = emptyList()
-
-    override fun getConfigurationParameters() = EmptyConfigurationParameters
-}
-
-internal object EmptyConfigurationParameters : ConfigurationParameters {
-    override fun get(key: String?): Optional<String> = Optional.empty()
-    override fun getBoolean(key: String?): Optional<Boolean> = Optional.empty()
-    override fun size(): Int = 0
-    override fun keySet(): Set<String> = emptySet()
 }

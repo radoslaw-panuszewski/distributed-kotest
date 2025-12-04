@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import dev.panuszewski.distributedkotest.gradle.TestBatch
 import dev.panuszewski.distributedkotest.gradle.TestResult
 import dev.panuszewski.distributedkotest.gradle.util.objectMapper
+import dev.panuszewski.distributedkotest.gradle.util.objectWriter
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
@@ -63,7 +64,7 @@ public abstract class GroupTestsIntoBatches : DefaultTask() {
         batches.forEach { batch ->
             val batchFile = outputDir.resolve("batch-${batch.number}.json")
             batchFile.createNewFile()
-            batchFile.writeText(objectMapper.writeValueAsString(batch))
+            batchFile.writeText(objectWriter.writeValueAsString(batch))
         }
     }
 }

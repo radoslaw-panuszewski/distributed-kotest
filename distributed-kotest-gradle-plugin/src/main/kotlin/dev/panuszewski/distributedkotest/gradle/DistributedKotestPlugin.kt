@@ -27,14 +27,11 @@ public class DistributedKotestPlugin : Plugin<Project> {
         configureTestExcludes(rootProject, prepareExcludeTestPatterns)
     }
 
-    private fun registerCollectTestResultsTask(rootProject: Project): TaskProvider<CollectTestResults> {
-        rootProject.projectDir.resolve("test-results").mkdirs()
-
-        return rootProject.tasks.register<CollectTestResults>("collectTestResults") {
-            testResultsDir = rootProject.layout.projectDirectory.dir("test-results") // TODO some other dir?
-            collectedTestResultsFile = rootProject.layout.buildDirectory.file("collectedTestResults.json")
+    private fun registerCollectTestResultsTask(rootProject: Project) =
+        rootProject.tasks.register<CollectTestResults>("collectTestResults") {
+            testResultsDir = rootProject.layout.buildDirectory.dir("$PATH_PREFIX/test-results").apply { get().asFile.mkdirs() }
+            collectedTestResultsFile = rootProject.layout.buildDirectory.file("$PATH_PREFIX/collectedTestResults.json")
         }
-    }
 
     private fun registerDiscoverNewTestsTask(
         rootProject: Project,
@@ -42,11 +39,11 @@ public class DistributedKotestPlugin : Plugin<Project> {
     ) =
         rootProject.tasks.register<DiscoverNewTests>("discoverNewTests") {
             collectedTestResultsFile = collectTestResults.flatMap { it.collectedTestResultsFile }
-            discoveredNewTestsFile = rootProject.layout.buildDirectory.file("discoveredNewTests.json")
+            discoveredNewTestsFile = rootProject.layout.buildDirectory.file("$PATH_PREFIX/discoveredNewTests.json")
 
             rootProject.allprojects {
                 val sourceSets = extensions.findByType<SourceSetContainer>()
-                val jvmTestSourceSet = sourceSets?.find { it.name == "jvmTest" }
+                val jvmTestSourceSet = sourceSets?.find { it.name in listOf("test", "jvmTest") }
 
                 if (jvmTestSourceSet != null) {
                     testSourceSetOutput.from(jvmTestSourceSet.output) // TODO detect if normal or multiplatform build
@@ -65,7 +62,7 @@ public class DistributedKotestPlugin : Plugin<Project> {
             collectedTestResultsFile = collectTestResults.flatMap { it.collectedTestResultsFile }
             discoveredNewTestsFile = discoverNewTests.flatMap { it.discoveredNewTestsFile }
             numberOfBatches = System.getenv("NUMBER_OF_BATCHES")?.toInt() ?: 1
-            batchesOutputDir = rootProject.layout.buildDirectory.dir("test-batches")
+            batchesOutputDir = rootProject.layout.buildDirectory.dir("$PATH_PREFIX/test-batches")
         }
 
     private fun registerPrepareExcludeTestPatternsTask(
@@ -75,7 +72,7 @@ public class DistributedKotestPlugin : Plugin<Project> {
         rootProject.tasks.register<PrepareExcludeTestPatterns>("prepareExcludeTestPatterns") {
             batchNumber = System.getenv("BATCH_NUMBER")?.toInt() ?: 1
             batchesDir = groupTestsIntoBatches.flatMap { it.batchesOutputDir }
-            excludePatternsFile = rootProject.layout.buildDirectory.file("testExcludePatterns.txt")
+            excludePatternsFile = rootProject.layout.buildDirectory.file("$PATH_PREFIX/testExcludePatterns.txt")
         }
 
     private fun configureTestExcludes(
@@ -96,5 +93,9 @@ public class DistributedKotestPlugin : Plugin<Project> {
                 }
             }
         }
+    }
+
+    private companion object {
+        const val PATH_PREFIX = "distributed-kotest"
     }
 }

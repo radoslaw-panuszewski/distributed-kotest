@@ -8,3 +8,5 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 internal val objectMapper = ObjectMapper()
     .registerKotlinModule { enable(UseJavaDurationConversion) }
     .registerModule(JavaTimeModule())
+
+internal val objectWriter = objectMapper.writerWithDefaultPrettyPrinter()

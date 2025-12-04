@@ -77,7 +77,7 @@ public abstract class PrepareExcludeTestPatterns : DefaultTask() {
             val newTestsCount = currentBatch.tests.count { it.name == "<new test>" }
             val oldTestsCount = currentBatch.tests.size - newTestsCount
             logger.lifecycle(buildString {
-                append("Running $oldTestsCount tests from batch ${batchNumber.get()}")
+                append("Batch ${batchNumber.get()}: running $oldTestsCount tests")
                 if (newTestsCount > 0) {
                     append(" + up to $newTestsCount new tests (some of them may be ignored at runtime)")
                 }

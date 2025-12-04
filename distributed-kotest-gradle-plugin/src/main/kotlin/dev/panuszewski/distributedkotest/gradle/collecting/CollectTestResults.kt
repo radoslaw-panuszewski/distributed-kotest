@@ -2,6 +2,7 @@ package dev.panuszewski.distributedkotest.gradle.collecting
 
 import dev.panuszewski.distributedkotest.gradle.TestResult
 import dev.panuszewski.distributedkotest.gradle.util.objectMapper
+import dev.panuszewski.distributedkotest.gradle.util.objectWriter
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -30,7 +31,7 @@ public abstract class CollectTestResults : DefaultTask() {
             .flatMap(TestXmlParser::parseTestResultsXml)
             .toList()
 
-        val testResultsJson = objectMapper.writeValueAsString(testResults)
+        val testResultsJson = objectWriter.writeValueAsString(testResults)
 
         collectedTestResultsFile.get().asFile.writeText(testResultsJson)
     }
