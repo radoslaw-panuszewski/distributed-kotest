@@ -29,3 +29,12 @@ internal fun BuildSteps.unpackTestResults(customizer: ScriptBuildStep.() -> Unit
         customizer()
     }
 }
+
+internal fun BuildSteps.clearPreviousTestResults(customizer: ScriptBuildStep.() -> Unit = {}) {
+    script {
+        name = "Clear previous test results"
+        scriptContent = "rm -rf build/distributed-kotest/test-results"
+
+        customizer()
+    }
+}

@@ -1,5 +1,6 @@
 package dev.panuszewski.distributedkotest.teamcity
 
+import dev.panuszewski.distributedkotest.teamcity.steps.clearPreviousTestResults
 import dev.panuszewski.distributedkotest.teamcity.steps.copyInitScript
 import dev.panuszewski.distributedkotest.teamcity.steps.packGradleCaches
 import dev.panuszewski.distributedkotest.teamcity.steps.unpackGradleCaches
@@ -65,10 +66,7 @@ public class DistributedTests(
                     gradleParams = "--init-script distributed-kotest.init.gradle.kts"
                 }
 
-                script {
-                    name = "Clear previous test results"
-                    scriptContent = "rm -rf test-results"
-                }
+                clearPreviousTestResults()
 
                 packGradleCaches()
             }
