@@ -1,4 +1,4 @@
-package dev.panuszewski.distributedkotest.gradle.batches
+package dev.panuszewski.distributedkotest.gradle.collecting
 
 import dev.panuszewski.distributedkotest.gradle.TestResult
 import org.w3c.dom.Element
@@ -8,9 +8,9 @@ import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.time.Duration.Companion.seconds
 
-internal object TestParser {
+internal object TestXmlParser {
 
-    fun parseTestResultsXmlFile(testResultsFile: File): List<TestResult> {
+    fun parseTestResultsXml(testResultsFile: File): List<TestResult> {
         val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(testResultsFile)
         val testcaseNodes = document.getElementsByTagName("testcase").toList()
 
