@@ -2,6 +2,7 @@ package dev.panuszewski.distributedkotest.gradle
 
 import dev.panuszewski.distributedkotest.gradle.framework.BuildOutcome.BUILD_SUCCESSFUL
 import dev.panuszewski.distributedkotest.gradle.framework.GradleSpec
+import dev.panuszewski.distributedkotest.gradle.framework.SuccessOrFailureBuildResult
 import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -19,38 +20,13 @@ class DistributedTestsSpec : GradleSpec() {
         buildGradleKts { KOTEST_SETUP }
 
         (1..numberOfTests).forEach { i ->
-            customProjectFile("src/test/kotlin/com/example${i}/Spec${i}.kt") {
-                """
-                package com.example$i
-                    
-                import io.kotest.core.spec.style.FunSpec
-                import io.kotest.matchers.shouldBe
-                
-                class Spec$i : FunSpec() {
-                    init {
-                        test("test $i") {
-                            1 shouldBe 1
-                        }
-                    }
-                }
-                """
-            }
-
-            customProjectFile("build/distributed-kotest/test-results/test/TEST-com.example${i}.Spec${i}.xml") {
-                """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <testsuite name="com.example${i}.Spec$i">
-                  <testcase name="test $i" classname="com.example${i}.Spec$i" time="1"/>
-                </testsuite>
-                """
-            }
+            kotestSpecWithSingleTest(i)
+            xmlTestResultFile(i)
         }
 
         // when
-        val results = (1..numberOfBatches).map { i ->
-            buildEnvironment["BATCH_NUMBER"] = "$i"
-            buildEnvironment["NUMBER_OF_BATCHES"] = "$numberOfBatches"
-            runGradle("test")
+        val results = (1..numberOfBatches).map { batchNumber ->
+            executeTestBatch(batchNumber, numberOfBatches)
         }
 
         // then
@@ -70,46 +46,58 @@ class DistributedTestsSpec : GradleSpec() {
         buildGradleKts { KOTEST_SETUP }
 
         (1..numberOfTests).forEach { i ->
-            customProjectFile("src/test/kotlin/com/example${i}/Spec${i}.kt") {
-                """
-                package com.example$i
-                    
-                import io.kotest.core.spec.style.FunSpec
-                import io.kotest.matchers.shouldBe
-                
-                class Spec$i : FunSpec() {
-                    init {
-                        test("test $i") {
-                            1 shouldBe 1
-                        }
-                    }
-                }
-                """
-            }
+            kotestSpecWithSingleTest(i)
 
             if (i <= 10) {
-                customProjectFile("build/distributed-kotest/test-results/test/TEST-com.example${i}.Spec${i}.xml") {
-                    """
-                    <?xml version="1.0" encoding="UTF-8"?>
-                    <testsuite name="com.example${i}.Spec$i">
-                      <testcase name="test $i" classname="com.example${i}.Spec$i" time="1"/>
-                    </testsuite>
-                    """
-                }
+                xmlTestResultFile(i)
             }
         }
 
         // when
-        val results = (1..numberOfBatches).map { i ->
-            buildEnvironment["BATCH_NUMBER"] = "$i"
-            buildEnvironment["NUMBER_OF_BATCHES"] = "$numberOfBatches"
-            runGradle("test")
+        val results = (1..numberOfBatches).map { batchNumber ->
+            executeTestBatch(batchNumber, numberOfBatches)
         }
 
         // then
         results.shouldForAll { it.buildOutcome shouldBe BUILD_SUCCESSFUL }
         results[0].passedTests() shouldHaveSize 7
         results[1].passedTests() shouldHaveSize 5
+    }
+
+    private fun kotestSpecWithSingleTest(i: Int) {
+        customProjectFile("src/test/kotlin/com/example${i}/Spec${i}.kt") {
+            """
+            package com.example$i
+                
+            import io.kotest.core.spec.style.FunSpec
+            import io.kotest.matchers.shouldBe
+            
+            class Spec$i : FunSpec() {
+                init {
+                    test("test $i") {
+                        1 shouldBe 1
+                    }
+                }
+            }
+            """
+        }
+    }
+
+    private fun xmlTestResultFile(i: Int) {
+        customProjectFile("build/distributed-kotest/test-results/test/TEST-com.example${i}.Spec${i}.xml") {
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <testsuite name="com.example${i}.Spec$i">
+              <testcase name="test $i" classname="com.example${i}.Spec$i" time="1"/>
+            </testsuite>
+            """
+        }
+    }
+
+    private fun executeTestBatch(batchNumber: Int, numberOfBatches: Int): SuccessOrFailureBuildResult {
+        buildEnvironment["BATCH_NUMBER"] = "$batchNumber"
+        buildEnvironment["NUMBER_OF_BATCHES"] = "$numberOfBatches"
+        return runGradle("test")
     }
 
     companion object {
