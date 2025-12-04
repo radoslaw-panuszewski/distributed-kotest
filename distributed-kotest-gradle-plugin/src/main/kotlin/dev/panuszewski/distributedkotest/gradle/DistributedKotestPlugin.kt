@@ -38,21 +38,26 @@ public class DistributedKotestPlugin : Plugin<Project> {
     private fun registerDiscoverNewTestsTask(
         rootProject: Project,
         collectTestResults: TaskProvider<CollectTestResults>
-    ) =
-        rootProject.tasks.register<DiscoverNewTests>("discoverNewTests") {
+    ): TaskProvider<DiscoverNewTests> {
+        val discoverNewTests = rootProject.tasks.register<DiscoverNewTests>("discoverNewTests") {
             collectedTestResultsFile = collectTestResults.flatMap { it.collectedTestResultsFile }
             discoveredNewTestsFile = rootProject.layout.buildDirectory.file("$PATH_PREFIX/discoveredNewTests.json")
+        }
 
-            rootProject.allprojects {
-                val sourceSets = extensions.findByType<SourceSetContainer>()
-                val testSourceSet = sourceSets?.find { it.name in listOf("test", "jvmTest") }
+        rootProject.allprojects {
+            val testSourceSets = extensions.findByType<SourceSetContainer>()
+                ?.filter { it.name.lowercase().contains("test") }
+                .orEmpty()
 
-                if (testSourceSet != null) {
-                    testSourceSetOutput.from(testSourceSet.output)
-                    testRuntimeClasspath.from(testSourceSet.runtimeClasspath)
+            for (sourceSet in testSourceSets) {
+                discoverNewTests.configure {
+                    testSourceSetOutput.from(sourceSet.output)
+                    testRuntimeClasspath.from(sourceSet.runtimeClasspath)
                 }
             }
         }
+        return discoverNewTests
+    }
 
     private fun registerGroupTestsIntoBatchesTask(
         rootProject: Project,
@@ -62,7 +67,7 @@ public class DistributedKotestPlugin : Plugin<Project> {
         rootProject.tasks.register<GroupTestsIntoBatches>("groupTestsIntoBatches") {
             collectedTestResultsFile = collectTestResults.flatMap { it.collectedTestResultsFile }
             discoveredNewTestsFile = discoverNewTests.flatMap { it.discoveredNewTestsFile }
-            numberOfBatches = System.getenv("NUMBER_OF_BATCHES")?.toInt() ?: 1
+            numberOfBatches = System.getenv(NUMBER_OF_BATCHES)?.toInt() ?: 1
             batchesOutputDir = rootProject.layout.buildDirectory.dir("$PATH_PREFIX/test-batches")
         }
 
@@ -74,7 +79,7 @@ public class DistributedKotestPlugin : Plugin<Project> {
         rootProject.tasks.register<PrintTestPlan>("printTestPlan") {
             collectedTestResultsFile = collectTestResults.flatMap { it.collectedTestResultsFile }
             batchesDir = groupTestsIntoBatches.flatMap { it.batchesOutputDir }
-            batchNumber = System.getenv("BATCH_NUMBER")?.toInt() ?: 1
+            batchNumber = System.getenv(BATCH_NUMBER)?.toInt() ?: 1
         }
 
     private fun registerPrepareExcludeTestPatternsTask(
@@ -84,7 +89,7 @@ public class DistributedKotestPlugin : Plugin<Project> {
     ) =
         rootProject.tasks.register<PrepareExcludeTestPatterns>("prepareExcludeTestPatterns") {
             batchesDir = groupTestsIntoBatches.flatMap { it.batchesOutputDir }
-            batchNumber = System.getenv("BATCH_NUMBER")?.toInt() ?: 1
+            batchNumber = System.getenv(BATCH_NUMBER)?.toInt() ?: 1
             excludePatternsFile = rootProject.layout.buildDirectory.file("$PATH_PREFIX/testExcludePatterns.txt")
             finalizedBy(printTestPlan)
         }
@@ -96,9 +101,11 @@ public class DistributedKotestPlugin : Plugin<Project> {
         rootProject.allprojects {
             tasks.withType<Test>().configureEach {
                 inputs.files(prepareExcludeTestPatterns.flatMap { it.excludePatternsFile })
-                // TODO do it only if debugMode is enabled
-                outputs.cacheIf { false }
-                outputs.upToDateWhen { false }
+
+                if (System.getenv(DEBUG_MODE) == "true") {
+                    outputs.cacheIf { false }
+                    outputs.upToDateWhen { false }
+                }
 
                 doFirst {
                     val excludePatternsFile = inputs.files.filter { it.name.endsWith(".txt") }.singleFile
@@ -111,5 +118,8 @@ public class DistributedKotestPlugin : Plugin<Project> {
 
     private companion object {
         const val PATH_PREFIX = "distributed-kotest"
+        const val NUMBER_OF_BATCHES = "NUMBER_OF_BATCHES"
+        const val BATCH_NUMBER = "BATCH_NUMBER"
+        const val DEBUG_MODE = "DEBUG_MODE"
     }
 }

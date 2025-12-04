@@ -10,6 +10,5 @@ internal data class TestResult(
     val duration: Duration,
 ) : Serializable {
 
-    // TODO display it this way only in tests
     override fun toString() = name
 }

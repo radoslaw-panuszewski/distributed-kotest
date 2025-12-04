@@ -51,6 +51,9 @@ public class DistributedTests(
         params {
             param("env.BATCH_NUMBER", "%batchNumber%")
             param("env.NUMBER_OF_BATCHES", "$numberOfBatches")
+            if (debugMode) {
+                param("env.DEBUG_MODE", "true")
+            }
         }
 
         steps {
