@@ -45,11 +45,11 @@ public class DistributedKotestPlugin : Plugin<Project> {
 
             rootProject.allprojects {
                 val sourceSets = extensions.findByType<SourceSetContainer>()
-                val jvmTestSourceSet = sourceSets?.find { it.name in listOf("test", "jvmTest") }
+                val testSourceSet = sourceSets?.find { it.name in listOf("test", "jvmTest") }
 
-                if (jvmTestSourceSet != null) {
-                    testSourceSetOutput.from(jvmTestSourceSet.output) // TODO detect if normal or multiplatform build
-                    testRuntimeClasspath.from(jvmTestSourceSet.runtimeClasspath)
+                if (testSourceSet != null) {
+                    testSourceSetOutput.from(testSourceSet.output)
+                    testRuntimeClasspath.from(testSourceSet.runtimeClasspath)
                 }
             }
         }

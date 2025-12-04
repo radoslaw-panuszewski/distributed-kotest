@@ -32,7 +32,7 @@ public class DistributedTests(
                 buildRule = lastSuccessful()
 
                 artifactRules = buildString {
-                    appendLine("?:test-results*.zip => test-results")
+                    appendLine("?:test-results*.zip => build/distributed-kotest/test-results")
 
                     if (cacheGradleHome) {
                         appendLine("?:gradle-caches.z* => %env.HOME%/.gradle/caches")
