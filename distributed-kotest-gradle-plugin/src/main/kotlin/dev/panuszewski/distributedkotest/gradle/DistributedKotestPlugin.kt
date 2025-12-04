@@ -7,6 +7,8 @@ import dev.panuszewski.distributedkotest.gradle.newtests.DiscoverNewTests
 import dev.panuszewski.distributedkotest.gradle.testplan.PrintTestPlan
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFile
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.testing.Test
@@ -38,26 +40,22 @@ public class DistributedKotestPlugin : Plugin<Project> {
     private fun registerDiscoverNewTestsTask(
         rootProject: Project,
         collectTestResults: TaskProvider<CollectTestResults>
-    ): TaskProvider<DiscoverNewTests> {
-        val discoverNewTests = rootProject.tasks.register<DiscoverNewTests>("discoverNewTests") {
-            collectedTestResultsFile = collectTestResults.flatMap { it.collectedTestResultsFile }
-            discoveredNewTestsFile = rootProject.layout.buildDirectory.file("$PATH_PREFIX/discoveredNewTests.json")
-        }
+    ) =
+        rootProject.tasks.register<DiscoverNewTests>("discoverNewTests") {
+            collectedTestResultsFile = collectTestResults.flatMap<RegularFile> { it.collectedTestResultsFile }
+            discoveredNewTestsFile = rootProject.layout.buildDirectory.file("${PATH_PREFIX}/discoveredNewTests.json")
 
-        rootProject.allprojects {
-            val testSourceSets = extensions.findByType<SourceSetContainer>()
-                ?.filter { it.name.lowercase().contains("test") }
-                .orEmpty()
+            rootProject.allprojects {
+                val testSourceSets = this.extensions.findByType<SourceSetContainer>()
+                    ?.filter<SourceSet> { it.name.lowercase().contains("test") }
+                    .orEmpty<SourceSet>()
 
-            for (sourceSet in testSourceSets) {
-                discoverNewTests.configure {
+                for (sourceSet in testSourceSets) {
                     testSourceSetOutput.from(sourceSet.output)
                     testRuntimeClasspath.from(sourceSet.runtimeClasspath)
                 }
             }
         }
-        return discoverNewTests
-    }
 
     private fun registerGroupTestsIntoBatchesTask(
         rootProject: Project,
