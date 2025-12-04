@@ -4,6 +4,7 @@ import dev.panuszewski.distributedkotest.gradle.batches.GroupTestsIntoBatches
 import dev.panuszewski.distributedkotest.gradle.collecting.CollectTestResults
 import dev.panuszewski.distributedkotest.gradle.excludepatterns.PrepareExcludeTestPatterns
 import dev.panuszewski.distributedkotest.gradle.newtests.DiscoverNewTests
+import dev.panuszewski.distributedkotest.gradle.testplan.PrintTestPlan
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSetContainer
@@ -22,7 +23,8 @@ public class DistributedKotestPlugin : Plugin<Project> {
         val collectTestResults = registerCollectTestResultsTask(rootProject)
         val discoverNewTests = registerDiscoverNewTestsTask(rootProject, collectTestResults)
         val groupTestsIntoBatches = registerGroupTestsIntoBatchesTask(rootProject, collectTestResults, discoverNewTests)
-        val prepareExcludeTestPatterns = registerPrepareExcludeTestPatternsTask(rootProject, groupTestsIntoBatches)
+        val printTestPlan = registerPrintTestPlanTask(rootProject, collectTestResults, groupTestsIntoBatches)
+        val prepareExcludeTestPatterns = registerPrepareExcludeTestPatternsTask(rootProject, groupTestsIntoBatches, printTestPlan)
 
         configureTestExcludes(rootProject, prepareExcludeTestPatterns)
     }
@@ -57,7 +59,6 @@ public class DistributedKotestPlugin : Plugin<Project> {
         collectTestResults: TaskProvider<CollectTestResults>,
         discoverNewTests: TaskProvider<DiscoverNewTests>
     ) =
-        // TODO print the summary even if the tasks are FROM-CACHE
         rootProject.tasks.register<GroupTestsIntoBatches>("groupTestsIntoBatches") {
             collectedTestResultsFile = collectTestResults.flatMap { it.collectedTestResultsFile }
             discoveredNewTestsFile = discoverNewTests.flatMap { it.discoveredNewTestsFile }
@@ -65,14 +66,27 @@ public class DistributedKotestPlugin : Plugin<Project> {
             batchesOutputDir = rootProject.layout.buildDirectory.dir("$PATH_PREFIX/test-batches")
         }
 
-    private fun registerPrepareExcludeTestPatternsTask(
+    private fun registerPrintTestPlanTask(
         rootProject: Project,
+        collectTestResults: TaskProvider<CollectTestResults>,
         groupTestsIntoBatches: TaskProvider<GroupTestsIntoBatches>
     ) =
-        rootProject.tasks.register<PrepareExcludeTestPatterns>("prepareExcludeTestPatterns") {
-            batchNumber = System.getenv("BATCH_NUMBER")?.toInt() ?: 1
+        rootProject.tasks.register<PrintTestPlan>("printTestPlan") {
+            collectedTestResultsFile = collectTestResults.flatMap { it.collectedTestResultsFile }
             batchesDir = groupTestsIntoBatches.flatMap { it.batchesOutputDir }
+            batchNumber = System.getenv("BATCH_NUMBER")?.toInt() ?: 1
+        }
+
+    private fun registerPrepareExcludeTestPatternsTask(
+        rootProject: Project,
+        groupTestsIntoBatches: TaskProvider<GroupTestsIntoBatches>,
+        printTestPlan: TaskProvider<PrintTestPlan>
+    ) =
+        rootProject.tasks.register<PrepareExcludeTestPatterns>("prepareExcludeTestPatterns") {
+            batchesDir = groupTestsIntoBatches.flatMap { it.batchesOutputDir }
+            batchNumber = System.getenv("BATCH_NUMBER")?.toInt() ?: 1
             excludePatternsFile = rootProject.layout.buildDirectory.file("$PATH_PREFIX/testExcludePatterns.txt")
+            finalizedBy(printTestPlan)
         }
 
     private fun configureTestExcludes(

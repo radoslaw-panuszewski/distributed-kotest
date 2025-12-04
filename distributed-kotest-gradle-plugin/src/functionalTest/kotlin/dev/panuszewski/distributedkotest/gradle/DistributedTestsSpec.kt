@@ -25,9 +25,7 @@ class DistributedTestsSpec : GradleSpec() {
         }
 
         // when
-        val results = (1..numberOfBatches).map { batchNumber ->
-            executeTestBatch(batchNumber, numberOfBatches)
-        }
+        val results = executeAllBatches(numberOfBatches)
 
         // then
         results.shouldForAll { result ->
@@ -54,14 +52,23 @@ class DistributedTestsSpec : GradleSpec() {
         }
 
         // when
-        val results = (1..numberOfBatches).map { batchNumber ->
-            executeTestBatch(batchNumber, numberOfBatches)
-        }
+        val results = executeAllBatches(numberOfBatches)
 
         // then
         results.shouldForAll { it.buildOutcome shouldBe BUILD_SUCCESSFUL }
         results[0].passedTests() shouldHaveSize 7
         results[1].passedTests() shouldHaveSize 5
+    }
+
+    private fun executeAllBatches(numberOfBatches: Int): List<SuccessOrFailureBuildResult> =
+        (1..numberOfBatches).map { batchNumber ->
+            executeTestBatch(batchNumber, numberOfBatches)
+        }
+
+    private fun executeTestBatch(batchNumber: Int, numberOfBatches: Int): SuccessOrFailureBuildResult {
+        buildEnvironment["BATCH_NUMBER"] = "$batchNumber"
+        buildEnvironment["NUMBER_OF_BATCHES"] = "$numberOfBatches"
+        return runGradle("test")
     }
 
     private fun kotestSpecWithSingleTest(i: Int) {
@@ -92,12 +99,6 @@ class DistributedTestsSpec : GradleSpec() {
             </testsuite>
             """
         }
-    }
-
-    private fun executeTestBatch(batchNumber: Int, numberOfBatches: Int): SuccessOrFailureBuildResult {
-        buildEnvironment["BATCH_NUMBER"] = "$batchNumber"
-        buildEnvironment["NUMBER_OF_BATCHES"] = "$numberOfBatches"
-        return runGradle("test")
     }
 
     companion object {

@@ -11,6 +11,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity.NAME_ONLY
@@ -18,28 +19,27 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.property
 import org.gradle.work.DisableCachingByDefault
 
-@DisableCachingByDefault
+@CacheableTask
 public abstract class PrepareExcludeTestPatterns : DefaultTask() {
-
-    @Input
-    public val batchNumber: Property<Int> = project.objects.property<Int>()
 
     @InputDirectory
     @PathSensitive(NAME_ONLY)
     public val batchesDir: DirectoryProperty = project.objects.directoryProperty()
+
+    @Input
+    public val batchNumber: Property<Int> = project.objects.property<Int>()
 
     @OutputFile
     public val excludePatternsFile: RegularFileProperty = project.objects.fileProperty()
 
     @TaskAction
     public fun execute() {
-        val batches = parseTestBatches()
+        val batches = readTestBatches()
         val testsToExclude = findTestsToExclude(batches)
         writeExcludesFile(testsToExclude)
-        logSummaryMessage(batches, testsToExclude)
     }
 
-    private fun parseTestBatches(): List<TestBatch> =
+    private fun readTestBatches(): List<TestBatch> =
         batchesDir.get()
             .asFile
             .listFiles()
@@ -56,35 +56,6 @@ public abstract class PrepareExcludeTestPatterns : DefaultTask() {
             .distinct()
             .joinToString("\n")
         excludePatternsFile.get().asFile.writeText(content)
-    }
-
-    private fun logSummaryMessage(batches: List<TestBatch>, testsToExclude: List<TestResult>) {
-        val allTestResults = batches.flatMap(TestBatch::tests)
-        val currentBatch = batches.find { it.number == batchNumber.get() }
-
-        if (allTestResults.isNotEmpty()) {
-            val message = buildString {
-                appendLine("Found ${allTestResults.size} tests")
-                appendLine("Grouped them into batches:")
-                batches.forEach {
-                    appendLine("${it.number}. tests = ${it.tests.size}, total duration = ${it.totalDuration}")
-                }
-            }
-            logger.lifecycle(message)
-        }
-
-        if (testsToExclude.isNotEmpty() && currentBatch != null) {
-            val newTestsCount = currentBatch.tests.count { it.name == "<new test>" }
-            val oldTestsCount = currentBatch.tests.size - newTestsCount
-            logger.lifecycle(buildString {
-                append("Batch ${batchNumber.get()}: running $oldTestsCount tests")
-                if (newTestsCount > 0) {
-                    append(" + up to $newTestsCount new tests (some of them may be ignored at runtime)")
-                }
-            })
-        } else {
-            logger.lifecycle("Running all tests")
-        }
     }
 }
 
