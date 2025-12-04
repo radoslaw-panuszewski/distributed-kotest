@@ -7,7 +7,11 @@ import kotlin.time.Duration
 
 internal object TestGrouper {
 
-    fun groupIntoBatches(numberOfBatches: Int, testResults: List<TestResult>, newTests: List<TestResult>): List<TestBatch> {
+    fun groupIntoBatches(
+        numberOfBatches: Int,
+        testResults: List<TestResult>,
+        newTests: List<TestResult> = emptyList(),
+    ): List<TestBatch> {
         val batches: List<MutableTestBatch> = (1..numberOfBatches).map(::MutableTestBatch)
 
         val atomicGroupsFromSlowest = findAtomicGroups(testResults)
