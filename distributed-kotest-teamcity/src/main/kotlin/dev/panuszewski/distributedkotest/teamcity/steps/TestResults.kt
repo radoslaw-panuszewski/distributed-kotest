@@ -7,7 +7,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.script
 internal fun BuildSteps.unpackTestResults(customizer: ScriptBuildStep.() -> Unit = {}) {
     script {
         name = "Unpack test results"
-        workingDir = "test-results"
+        workingDir = "build/distributed-kotest/test-results"
         scriptContent = """
             FILE="test-results-1.zip"
 
