@@ -10,5 +10,5 @@ check(project == rootProject) { "versioning convention must be applied to the ro
 
 allprojects {
     group = "dev.panuszewski"
-    version = "local" // rootProject.scmVersion.version
+    version = rootProject.scmVersion.version
 }
