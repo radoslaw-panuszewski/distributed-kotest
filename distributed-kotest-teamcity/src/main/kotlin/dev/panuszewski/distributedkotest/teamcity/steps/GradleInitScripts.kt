@@ -8,12 +8,19 @@ internal fun BuildSteps.copyInitScript(initScriptName: String, customizer: Scrip
     script {
         name = "Copy init script"
 
-        val initScriptContent = javaClass.getResource("/$initScriptName").readText()
-        scriptContent = """
-            |cat > $initScriptName <<EOF
-            |$initScriptContent
-            |EOF
-            """.trimMargin()
+        val initScriptContent = javaClass.getResource("/$initScriptName")?.readText()
+
+        if (initScriptContent != null) {
+            scriptContent = """
+                |cat > $initScriptName <<EOF
+                |$initScriptContent
+                |EOF
+                """.trimMargin()
+        } else {
+            scriptContent = """
+                echo "Unable to copy init script '$initScriptContent' (not found on classpath)"
+            """.trimIndent()
+        }
 
         customizer()
     }
