@@ -20,5 +20,5 @@ dependencies {
     implementation(libs.jackson.moduleKotlin)
     implementation(libs.jackson.dataformatJsr310)
     implementation(libs.commons.numbersCombinatorics)
-    bundledImplementation(libs.kotest.runnerJunit5)
+    implementation(libs.kotest.runnerJunit5)
 }

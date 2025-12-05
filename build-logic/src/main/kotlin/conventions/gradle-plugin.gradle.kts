@@ -57,21 +57,10 @@ configurations {
     named("functionalTestRuntimeClasspath") {
         extendsFrom(configurations.testRuntimeClasspath.get())
     }
-
-    dependencyScope("bundledImplementation")
-
-    compileClasspath {
-        extendsFrom(configurations["bundledImplementation"])
-    }
-
-    resolvable("bundledRuntimeClasspath") {
-        extendsFrom(configurations["bundledImplementation"])
-    }
 }
 
 tasks {
     shadowJar {
-        configurations = listOf(project.configurations["bundledRuntimeClasspath"])
         archiveClassifier = ""
         mustRunAfter(jar)
     }
