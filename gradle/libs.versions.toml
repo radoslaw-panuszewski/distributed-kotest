@@ -3,19 +3,22 @@ kotlin = "2.2.21"
 jackson = "2.20.1"
 commons-numbers = "1.2"
 junit-jupiter = "5.13.4"
-kotest = "6.0.5"
+kotest = "6.0.7"
 axion-release = "1.21.1"
 nexus-publish = "2.0.0"
+shadow = "9.2.2"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 
 [libraries]
 jackson-moduleKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-dataformatJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 commons-numbersCombinatorics = { module = "org.apache.commons:commons-numbers-combinatorics", version.ref = "commons-numbers" }
 jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
-kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
+kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-runnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 

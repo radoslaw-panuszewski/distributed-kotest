@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     `java-gradle-plugin`
     `maven-publish`
+    alias(libs.plugins.shadow)
 }
 
 java {
@@ -55,5 +56,23 @@ testing.suites {
 configurations {
     named("functionalTestRuntimeClasspath") {
         extendsFrom(configurations.testRuntimeClasspath.get())
+    }
+
+    dependencyScope("bundledImplementation")
+
+    compileClasspath {
+        extendsFrom(configurations["bundledImplementation"])
+    }
+
+    resolvable("bundledRuntimeClasspath") {
+        extendsFrom(configurations["bundledImplementation"])
+    }
+}
+
+tasks {
+    shadowJar {
+        configurations = listOf(project.configurations["bundledRuntimeClasspath"])
+        archiveClassifier = ""
+        mustRunAfter(jar)
     }
 }

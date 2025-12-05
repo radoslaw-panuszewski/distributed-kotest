@@ -74,13 +74,17 @@ public abstract class DiscoverNewTests : DefaultTask() {
      * The [io.kotest.runner.junit.platform.discovery.Discovery] util is called via [DiscoveryInvoker],
      * that will be loaded via the custom class loader.
      */
-    private fun discoverTestClasses(classes: List<String>): List<String> {
-        val classLoader = createClassLoader()
-        val discoveryInvokerClass = classLoader.loadClass(DiscoveryInvoker::class.qualifiedName).kotlin
-        val discoveryInvokerInstance = discoveryInvokerClass.constructors.first().call()
-        val discoverMethod = discoveryInvokerClass.declaredFunctions.find { it.name == "discover" }
-        return discoverMethod?.call(discoveryInvokerInstance, classes) as List<String>
-    }
+    private fun discoverTestClasses(classes: List<String>): List<String> =
+        try {
+            val classLoader = createClassLoader()
+            val discoveryInvokerClass = classLoader.loadClass(DiscoveryInvoker::class.qualifiedName).kotlin
+            val discoveryInvokerInstance = discoveryInvokerClass.constructors.first().call()
+            val discoverMethod = discoveryInvokerClass.declaredFunctions.find { it.name == "discover" }
+            discoverMethod?.call(discoveryInvokerInstance, classes) as List<String>
+        } catch (e: Exception) {
+            logger.warn("Unable to discover new tests, reason", e)
+            emptyList()
+        }
 
     private fun createClassLoader(): URLClassLoader {
         val testClasses = testSourceSetOutput.toArrayOfUrls()
