@@ -71,7 +71,9 @@ public class DistributedTests(
 
                 clearPreviousTestResults()
 
-                packGradleCaches()
+                if (cacheGradleHome) {
+                    packGradleCaches()
+                }
             }
         }
 
